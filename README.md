@@ -148,7 +148,7 @@ Haziri Lgao supports a comprehensive role-based access system:
 
 This project is proprietary software. All rights reserved.
 
-See the [LICENSE](LICENSE) file for full terms and conditions.
+See the [LICENSE](LICENSE.txt) file for full terms and conditions.
 
 ---
 
