@@ -151,7 +151,8 @@ This project is proprietary software. All rights reserved.
 See the [LICENSE](LICENSE.txt) file for full terms and conditions.
 
 ---
-
+##Demo VIDEO 
+see Demo VIDEO https://drive.google.com/file/d/1V_eMyq4A_PGBPz6JYgvxNOWthErdBLhf/view?usp=sharing
 <p align="center">
   <strong>Made with ❤️ for Educational Institutions in Pakistan</strong>
 </p>
