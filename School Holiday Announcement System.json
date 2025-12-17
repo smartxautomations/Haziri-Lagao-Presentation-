@@ -1,0 +1,629 @@
+{
+  "name": "School Holiday Announcement System",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            }
+          ]
+        }
+      },
+      "name": "Daily Check at 9 AM",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        -800,
+        96
+      ],
+      "id": "831e5dd8-307d-41ac-a349-c8539dabd465"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1pVkMgN5IQkO5pspJqeCx7nqUW4qBI9sjjkNkCMWa8wE",
+          "mode": "list",
+          "cachedResultName": "Holiday announcement",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pVkMgN5IQkO5pspJqeCx7nqUW4qBI9sjjkNkCMWa8wE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 668593566,
+          "mode": "list",
+          "cachedResultName": "Announcement",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pVkMgN5IQkO5pspJqeCx7nqUW4qBI9sjjkNkCMWa8wE/edit#gid=668593566"
+        },
+        "options": {}
+      },
+      "name": "Get Announcements",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        -576,
+        96
+      ],
+      "id": "6389665c-c04e-4d58-9567-8aa07ab28483",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HwgBzgg4CGWjq7wl",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const today = new Date();\ntoday.setHours(0, 0, 0, 0);\n\nconst twoDaysLater = new Date(today);\ntwoDaysLater.setDate(today.getDate() + 2);\n\nconst oneDayLater = new Date(today);\noneDayLater.setDate(today.getDate() + 1);\n\nconst upcomingHolidays = [];\n\nfor (const item of $input.all()) {\n  const holidayDate = new Date(item.json.Date);\n  holidayDate.setHours(0, 0, 0, 0);\n  \n  // Skip if date is invalid\n  if (isNaN(holidayDate.getTime())) {\n    continue;\n  }\n\n  // --- 2-Day Reminder ---\n  if (\n    holidayDate.toDateString() === twoDaysLater.toDateString() &&\n    !item.json['Sent 2-Day Reminder']\n  ) {\n    upcomingHolidays.push({\n      json: {\n        rowNumber: item.json.row_number,\n        date: item.json.Date,\n        type: item.json.Type,\n        reminderType: \"2-Day Reminder\",\n        message: item.json.Message || `Dear Parents,\\n\\nWe hope this message finds you well. This is to inform you that ${item.json.Type} will be observed on ${item.json.Date}.\\n\\nThe school will remain closed on this day.\\n\\n\\n\\nThank you for your cooperation.\\n\\n\\n\\nBest regards,\\n\\nSchool Administration`,\n        updateColumn: \"Sent 2-Day Reminder\",\n        updateValue: today.toLocaleString('en-GB', { \n          day: '2-digit', \n          month: '2-digit', \n          year: 'numeric',\n          hour: '2-digit',\n          minute: '2-digit'\n        }),\n        // IMPORTANT: Pass existing values\n        existingSent2Day: item.json['Sent 2-Day Reminder'] || '',\n        existingSent1Day: item.json['Sent 1-Day Reminder'] || ''\n      }\n    });\n  }\n\n  // --- 1-Day Reminder ---\n  if (\n    holidayDate.toDateString() === oneDayLater.toDateString() &&\n    !item.json['Sent 1-Day Reminder']\n  ) {\n    upcomingHolidays.push({\n      json: {\n        rowNumber: item.json.row_number,\n        date: item.json.Date,\n        type: item.json.Type,\n        reminderType: \"1-Day Reminder\",\n        message: item.json.Message || `Dear Parents,\\n\\nWe hope this message finds you well. This is to inform you that ${item.json.Type} will be observed on ${item.json.Date}.\\n\\nThe school will remain closed on this day.\\n\\n\\n\\nThank you for your cooperation.\\n\\n\\n\\nBest regards,\\n\\nSchool Administration`,\n        updateColumn: \"Sent 1-Day Reminder\",\n        updateValue: today.toLocaleString('en-GB', { \n          day: '2-digit', \n          month: '2-digit', \n          year: 'numeric',\n          hour: '2-digit',\n          minute: '2-digit'\n        }),\n        // IMPORTANT: Pass existing values\n        existingSent2Day: item.json['Sent 2-Day Reminder'] || '',\n        existingSent1Day: item.json['Sent 1-Day Reminder'] || ''\n      }\n    });\n  }\n}\n\nreturn upcomingHolidays;"
+      },
+      "name": "Check Holidays 2 Days Before",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -352,
+        96
+      ],
+      "id": "b57f2e66-177c-473b-87f3-6b3a4f7b06af"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.rowNumber }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "If Holiday Found",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -128,
+        96
+      ],
+      "id": "0bc6b837-6d92-4512-b340-84fa5aaa27df"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1pVkMgN5IQkO5pspJqeCx7nqUW4qBI9sjjkNkCMWa8wE",
+          "mode": "list",
+          "cachedResultName": "Holiday announcement",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pVkMgN5IQkO5pspJqeCx7nqUW4qBI9sjjkNkCMWa8wE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Parents contact",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pVkMgN5IQkO5pspJqeCx7nqUW4qBI9sjjkNkCMWa8wE/edit#gid=0"
+        },
+        "options": {}
+      },
+      "name": "Get Parents Contacts",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        96,
+        96
+      ],
+      "id": "25e90fe2-37d7-4a4a-b902-09bfef778d4a",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HwgBzgg4CGWjq7wl",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json['Parent\\'s Email'] }}",
+        "subject": "={{ $('Check Holidays 2 Days Before').item.json.type }} - School Holiday Notification",
+        "message": "={{ $('Check Holidays 2 Days Before').item.json.message }}\n",
+        "options": {}
+      },
+      "name": "Send Email to Parents",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        320,
+        0
+      ],
+      "id": "925bf954-ca45-4f8c-a1bd-8b5011628566",
+      "webhookId": "e51e2106-f882-4123-a0d8-0b12a79076f2",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "BFQ1v5ejgsqt78xW",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1pVkMgN5IQkO5pspJqeCx7nqUW4qBI9sjjkNkCMWa8wE",
+          "mode": "list",
+          "cachedResultName": "Holiday announcement",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pVkMgN5IQkO5pspJqeCx7nqUW4qBI9sjjkNkCMWa8wE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 668593566,
+          "mode": "list",
+          "cachedResultName": "Announcement",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pVkMgN5IQkO5pspJqeCx7nqUW4qBI9sjjkNkCMWa8wE/edit#gid=668593566"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $('If Holiday Found').item.json.date }}",
+            "row_number": "={{ $('Check Holidays 2 Days Before').item.json.rowNumber }}\n",
+            "Sent 2-Day Reminder": "={{ $('Check Holidays 2 Days Before').item.json.reminderType === \"2-Day Reminder\" ? $('Check Holidays 2 Days Before').item.json.updateValue : $('Check Holidays 2 Days Before').item.json.existingSent2Day }}",
+            "Sent 1-Day Reminder": "={{ $('Check Holidays 2 Days Before').item.json.reminderType === \"1-Day Reminder\" ? $('Check Holidays 2 Days Before').item.json.updateValue : $('Check Holidays 2 Days Before').item.json.existingSent1Day }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Type",
+              "displayName": "Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Message",
+              "displayName": "Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sent 2-Day Reminder",
+              "displayName": "Sent 2-Day Reminder",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Custom holiday",
+              "displayName": "Custom holiday",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sent 1-Day Reminder",
+              "displayName": "Sent 1-Day Reminder",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "name": "Update Sent Date",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        544,
+        0
+      ],
+      "id": "18274906-0de5-4f76-a83b-5560700529fa",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HwgBzgg4CGWjq7wl",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "holiday-form",
+        "formTitle": "Custom Holiday Notification",
+        "formDescription": "Send custom holiday notification to parents",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Holiday Date",
+              "fieldType": "date",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Holiday Type",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Message",
+              "fieldType": "textarea",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Custom Holiday Form",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2,
+      "position": [
+        -800,
+        512
+      ],
+      "webhookId": "custom-holiday-form",
+      "id": "034155ce-1479-4e31-a63f-d7308863b59c"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1pVkMgN5IQkO5pspJqeCx7nqUW4qBI9sjjkNkCMWa8wE",
+          "mode": "list",
+          "cachedResultName": "Holiday announcement",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pVkMgN5IQkO5pspJqeCx7nqUW4qBI9sjjkNkCMWa8wE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Parents contact",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pVkMgN5IQkO5pspJqeCx7nqUW4qBI9sjjkNkCMWa8wE/edit#gid=0"
+        },
+        "options": {}
+      },
+      "name": "Get Parents for Custom",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        -576,
+        512
+      ],
+      "id": "3ca6c0b0-6936-4626-972f-325677c75cd6",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HwgBzgg4CGWjq7wl",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json['Parent\\'s Email'] }}",
+        "subject": "={{ $('Custom Holiday Form').item.json['Holiday Type'] }} - School Notification",
+        "message": "=Dear Parents,\n\n{{ $('Custom Holiday Form').item.json.Message }}\n\n\nThank you,\nSchool Administration",
+        "options": {}
+      },
+      "name": "Send Custom Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        -352,
+        416
+      ],
+      "id": "34463c7a-74b2-4259-a867-87d784e86453",
+      "webhookId": "f0c0e906-8636-4e1f-b5e7-f3ab43bd5935",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "BFQ1v5ejgsqt78xW",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1pVkMgN5IQkO5pspJqeCx7nqUW4qBI9sjjkNkCMWa8wE",
+          "mode": "list",
+          "cachedResultName": "Holiday announcement",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pVkMgN5IQkO5pspJqeCx7nqUW4qBI9sjjkNkCMWa8wE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 668593566,
+          "mode": "list",
+          "cachedResultName": "Announcement",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pVkMgN5IQkO5pspJqeCx7nqUW4qBI9sjjkNkCMWa8wE/edit#gid=668593566"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $('Custom Holiday Form').item.json['Holiday Date'] }}",
+            "Type": "={{ $('Custom Holiday Form').item.json['Holiday Type'] }}",
+            "Message": "={{ $('Custom Holiday Form').item.json.Message }}",
+            "Custom holiday": "={{ $('Custom Holiday Form').item.json.submittedAt }}"
+          },
+          "matchingColumns": [
+            "Date"
+          ],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Type",
+              "displayName": "Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Message",
+              "displayName": "Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sent Date",
+              "displayName": "Sent Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Custom holiday",
+              "displayName": "Custom holiday",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "name": "Add Custom Holiday Record",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        -128,
+        416
+      ],
+      "id": "41b6cd93-2434-4d89-af26-19452bd5a542",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HwgBzgg4CGWjq7wl",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "939270479265340",
+        "recipientPhoneNumber": "={{ String($json[\"Parent's Whatsapp Number\"]).replace(/\\D/g, \"\") }}",
+        "textBody": "={{ $('Custom Holiday Form').item.json.Message }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        -352,
+        608
+      ],
+      "id": "6c8473ae-3aa4-4ae7-bdd2-fcd191feb1d9",
+      "name": "Send message",
+      "webhookId": "75285c8f-f029-4006-b509-1a9cad53fc93",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "A6ez3dwgWhnelo4C",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "939270479265340",
+        "recipientPhoneNumber": "={{ String($json[\"Parent's Whatsapp Number\"]).replace(/\\D/g, \"\") }}",
+        "textBody": "={{ $('Check Holidays 2 Days Before').item.json.message }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        320,
+        192
+      ],
+      "id": "1d0e1af0-7940-4b00-85ae-54e5f796006d",
+      "name": "Send message1",
+      "webhookId": "7d95ff41-00d3-452a-a236-314c466bbc87",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "A6ez3dwgWhnelo4C",
+          "name": "WhatsApp account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Daily Check at 9 AM": {
+      "main": [
+        [
+          {
+            "node": "Get Announcements",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Announcements": {
+      "main": [
+        [
+          {
+            "node": "Check Holidays 2 Days Before",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Holidays 2 Days Before": {
+      "main": [
+        [
+          {
+            "node": "If Holiday Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Holiday Found": {
+      "main": [
+        [
+          {
+            "node": "Get Parents Contacts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Parents Contacts": {
+      "main": [
+        [
+          {
+            "node": "Send Email to Parents",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email to Parents": {
+      "main": [
+        [
+          {
+            "node": "Update Sent Date",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Custom Holiday Form": {
+      "main": [
+        [
+          {
+            "node": "Get Parents for Custom",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Parents for Custom": {
+      "main": [
+        [
+          {
+            "node": "Send Custom Email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Custom Email": {
+      "main": [
+        [
+          {
+            "node": "Add Custom Holiday Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "421fd4d2-060b-4a67-b233-fbd2357a7e74",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "79dc35cc51772a203800d051daa8c54b430a20d84ba56b3843a17eb514af14c5"
+  },
+  "id": "XK4M0m6Uz4c15EKg",
+  "tags": []
+}

@@ -1,0 +1,565 @@
+{
+  "name": "Monthly School Fee Reminder to Parents for Unpaid Students",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "id": "a1539afb-8f2d-48c3-b6db-468b892b1643",
+      "name": "Reminder Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -896,
+        288
+      ]
+    },
+    {
+      "parameters": {
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "423e4367-d7a7-43d0-a2a1-0a1d6c70fa25",
+      "name": "Workflow Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -672,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1bXPzelxeXo9ixThtNM_DQGsTjHaSAAHFztdYCLkxolU"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Sheet1"
+        },
+        "options": {}
+      },
+      "id": "05f362f7-ab3d-4bcb-b465-11b66e587288",
+      "name": "Get Parent Fee Data",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -448,
+        192
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HwgBzgg4CGWjq7wl",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "id-1",
+                    "leftValue": "={{ $if($('Set Test Date').isExecuted, $('Set Test Date').item.json['Day of month'], $('Reminder Schedule Trigger').item.json['Day of month'].toNumber()) }}",
+                    "rightValue": 1,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gte"
+                    }
+                  },
+                  {
+                    "id": "id-2",
+                    "leftValue": "={{ $if($('Set Test Date').isExecuted, $('Set Test Date').item.json['Day of month'], $('Reminder Schedule Trigger').item.json['Day of month'].toNumber()) }}",
+                    "rightValue": 10,
+                    "operator": {
+                      "type": "number",
+                      "operation": "lte"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "id-3",
+                    "leftValue": "={{ $if($('Set Test Date').isExecuted, $('Set Test Date').item.json['Day of month'], $('Reminder Schedule Trigger').item.json['Day of month'].toNumber()) }}",
+                    "rightValue": 11,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gte"
+                    }
+                  },
+                  {
+                    "id": "id-4",
+                    "leftValue": "={{ $if($('Set Test Date').isExecuted, $('Set Test Date').item.json['Day of month'], $('Reminder Schedule Trigger').item.json['Day of month'].toNumber()) }}",
+                    "rightValue": 15,
+                    "operator": {
+                      "type": "number",
+                      "operation": "lte"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "id-5",
+                    "leftValue": "={{ $if($('Set Test Date').isExecuted, $('Set Test Date').item.json['Day of month'], $('Reminder Schedule Trigger').item.json['Day of month'].toNumber()) }}",
+                    "rightValue": 15,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gt"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "8cd4d200-1790-4263-b371-c6ad951f559d",
+      "name": "Route by Date",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -224,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $json['Outstanding Fee Amount'] }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "5de964f5-fb44-4934-a777-050575877215",
+      "name": "Filter Unpaid Parents",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $json['Outstanding Fee Amount'] }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "e707353d-8b73-4c75-b132-5f105c5a4ab4",
+      "name": "Filter Unpaid After 15th",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.Email }}",
+        "subject": "School Fee Vouchers Issued",
+        "message": "=Dear Parents,\nFee vouchers have been issued to students for the month of \n{{ $('Get Parent Fee Data').item.json['Name of Months Fee'] }}. Please ensure the fee is paid by the due date, 10th {{ $('Get Parent Fee Data').item.json['Name of Months Fee'] }}.\nThank you,\nSchool Administration\n",
+        "options": {}
+      },
+      "id": "7fcd1905-7d34-430a-b9ab-4ae87add7c65",
+      "name": "Send Initial Reminder (1st-10th)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        192
+      ],
+      "webhookId": "e8574a7f-6890-431d-9d64-0d25d6cf2785",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "BFQ1v5ejgsqt78xW",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.Email }}",
+        "subject": "Fee Payment Reminder - Due by 15th",
+        "message": "=Dear Parents, Please submit the fee of your child Name {{ $('Get Parent Fee Data').item.json['Student Name'] }} \nClass {{ $('Get Parent Fee Data').item.json.Class }} by the 15th of this month of Rs.{{ $('Get Parent Fee Data').item.json['Outstanding Fee Amount'] }}   Otherwise, a fine will be added to the school fee.Thank you,School Administration ",
+        "options": {}
+      },
+      "id": "bb003248-ea7d-466e-8469-62d0199ef998",
+      "name": "Send Unpaid Reminder (After 10th)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        224,
+        0
+      ],
+      "webhookId": "3216c9df-e381-439a-b9c8-f3402f1dd188",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "BFQ1v5ejgsqt78xW",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.Email }}",
+        "subject": "Late Fee Added - Rs.100 Fine",
+        "message": "=Dear Parents,A Rs.100 fine has been added to your Child Name {{ $json['Student Name'] }} Class \n{{ $json.Class }} remaining school fee Rs. {{ $json['Outstanding Fee Amount'] }} . Please ensure timely payment in future to avoid fines.Thank you,\nSchool Administration ",
+        "options": {}
+      },
+      "id": "138a0e50-16b6-4eeb-9aa5-e0bcb0567f29",
+      "name": "Send Fine Notice (After 15th)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        224,
+        384
+      ],
+      "webhookId": "417eab51-f875-4c57-9c76-844cef9dd8b3",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "BFQ1v5ejgsqt78xW",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "d3156f86-4900-4337-8306-04e7b543c272",
+      "name": "Test Trigger (Manual)",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1120,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "Day of month",
+              "value": 17,
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "74bffef4-bc23-49dc-abd1-658837542bf1",
+      "name": "Set Test Date",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -896,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "939270479265340",
+        "recipientPhoneNumber": "={{ String($('Get Parent Fee Data').item.json[\"Father's Contact Number\"]).replace(/\\D/g, \"\") }}",
+        "textBody": "=Dear Parents,\nFee vouchers have been issued to students for the month of \n{{ $('Get Parent Fee Data').item.json['Name of Months Fee'] }}. Please ensure the fee is paid by the due date, 10th {{ $('Get Parent Fee Data').item.json['Name of Months Fee'] }}.\nThank you,\nSchool Administration\n",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        192
+      ],
+      "id": "5a2bc083-6f64-42cf-8f96-bfa9b46a0201",
+      "name": "Send message",
+      "webhookId": "f1a25419-758a-40a4-94b6-5dc6022f22b5",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "A6ez3dwgWhnelo4C",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "939270479265340",
+        "recipientPhoneNumber": "={{ String($('Get Parent Fee Data').item.json[\"Father's Contact Number\"]).replace(/\\D/g, \"\") }}",
+        "textBody": "=Dear Parents,A Rs.100 fine has been added to your Child Name {{ $json['Student Name'] }} Class \n{{ $json.Class }} remaining school fee Rs. {{ $json['Outstanding Fee Amount'] }} . Please ensure timely payment in future to avoid fines.Thank you,\nSchool Administration ",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        432,
+        384
+      ],
+      "id": "0367b0e1-24f0-4e55-b136-1ceb050cd282",
+      "name": "Send message1",
+      "webhookId": "d7c6cabe-e572-4d34-a5cc-cf28bde7b072",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "A6ez3dwgWhnelo4C",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "939270479265340",
+        "recipientPhoneNumber": "={{ String($('Get Parent Fee Data').item.json[\"Father's Contact Number\"]).replace(/\\D/g, \"\") }}",
+        "textBody": "=Dear Parents, Please submit the fee of your child Name {{ $('Get Parent Fee Data').item.json['Student Name'] }} \nClass {{ $('Get Parent Fee Data').item.json.Class }} by the 15th of this month of Rs.{{ $('Get Parent Fee Data').item.json['Outstanding Fee Amount'] }}   Otherwise, a fine will be added to the school fee.Thank you,School Administration ",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        432,
+        0
+      ],
+      "id": "b9b4f5e3-e9d2-4f5a-90c7-1fef44a85123",
+      "name": "Send message2",
+      "webhookId": "72134d73-1996-49ac-bc38-7f79e658b370",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "A6ez3dwgWhnelo4C",
+          "name": "WhatsApp account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Reminder Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Workflow Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Configuration": {
+      "main": [
+        [
+          {
+            "node": "Get Parent Fee Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Parent Fee Data": {
+      "main": [
+        [
+          {
+            "node": "Route by Date",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Date": {
+      "main": [
+        [
+          {
+            "node": "Send Initial Reminder (1st-10th)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Filter Unpaid Parents",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Filter Unpaid After 15th",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Unpaid Parents": {
+      "main": [
+        [
+          {
+            "node": "Send Unpaid Reminder (After 10th)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Unpaid After 15th": {
+      "main": [
+        [
+          {
+            "node": "Send Fine Notice (After 15th)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Trigger (Manual)": {
+      "main": [
+        [
+          {
+            "node": "Set Test Date",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Test Date": {
+      "main": [
+        [
+          {
+            "node": "Workflow Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Initial Reminder (1st-10th)": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message": {
+      "main": [
+        []
+      ]
+    },
+    "Send Fine Notice (After 15th)": {
+      "main": [
+        [
+          {
+            "node": "Send message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Unpaid Reminder (After 10th)": {
+      "main": [
+        [
+          {
+            "node": "Send message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ea5628b7-334d-4c29-bcab-1847eaa25c06",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "79dc35cc51772a203800d051daa8c54b430a20d84ba56b3843a17eb514af14c5"
+  },
+  "id": "CdYXMKsqVyxspI0c",
+  "tags": []
+}

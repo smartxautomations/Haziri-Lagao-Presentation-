@@ -1,0 +1,332 @@
+{
+  "name": "Rag agent new workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2592,
+        512
+      ],
+      "id": "8d6ba491-ec36-4680-8963-a5934a4a10ec",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "1PfKsZXvSAXZaZS8jLVEqUfQ2ykJufBN-4K9VTIr-I7Q",
+          "mode": "list",
+          "cachedResultName": "school_support_agent_extended_QA",
+          "cachedResultUrl": "https://docs.google.com/document/d/1PfKsZXvSAXZaZS8jLVEqUfQ2ykJufBN-4K9VTIr-I7Q/edit?usp=drivesdk"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -2240,
+        512
+      ],
+      "id": "94f0f7ab-555c-4064-acfa-4fafa6dcde27",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "uQRiKXnTqtAVDGtB",
+          "name": "Google Drive account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {
+          "queryName": "match_documents"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        -1888,
+        512
+      ],
+      "id": "9ccc133c-a64a-406b-bbc1-7e3d43ad489b",
+      "name": "Supabase Vector Store",
+      "credentials": {
+        "supabaseApi": {
+          "id": "F1zDMFWdXlXswBJH",
+          "name": "Supabase account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        -1808,
+        736
+      ],
+      "id": "690c2f55-5db9-4c91-b641-604a8e559e13",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -2160,
+        336
+      ],
+      "id": "2fe1ec0c-4e6f-4f1e-bb24-e62a32e6855f",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "5Z5nIzgeY8w309X7",
+          "name": "OpenAi account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2592,
+        112
+      ],
+      "id": "6e399afe-cebc-4b0a-a3d0-a7d2e4b09f9b",
+      "name": "WhatsApp Trigger",
+      "webhookId": "3286d41c-ed80-49c3-b841-be7cf83868bc",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "yv1B5QK6kU0wMgx3",
+          "name": "WhatsApp OAuth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.messages[0].text.body }}",
+        "options": {
+          "systemMessage": "“If the answer is not found in the provided PDF, then generate a clear, accurate, and helpful school-related answer using general school information. Do not mention the PDF or any AI system. Just provide the best possible answer in simple and correct English.”"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -2336,
+        -96
+      ],
+      "id": "540e31b0-408e-4c25-8b01-dcf0642c8400",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -2368,
+        128
+      ],
+      "id": "ff1c807b-6f52-400e-bbd1-ae1d5dbb2aa7",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "5Z5nIzgeY8w309X7",
+          "name": "OpenAi account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Retrieve answers from Pdf google drive.",
+        "tableName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "documents"
+        },
+        "topK": 1,
+        "includeDocumentMetadata": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        -2240,
+        128
+      ],
+      "id": "dab92d3e-194d-4ef4-8ba6-a3f7ccd387af",
+      "name": "Supabase Vector Store1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "F1zDMFWdXlXswBJH",
+          "name": "Supabase account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "876095172256986",
+        "recipientPhoneNumber": "923213595265",
+        "textBody": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        -1808,
+        112
+      ],
+      "id": "ef227f17-e11e-4285-a92d-bfaccb9a8d46",
+      "name": "Send message",
+      "webhookId": "535f941f-b7ab-4025-867b-c8bd4ad3f239",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "rD1DeBvQv517UvVm",
+          "name": "WhatsApp account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "Supabase Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store": {
+      "main": [
+        []
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "007b4112-e868-4037-adca-5095bf30b7cb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "79dc35cc51772a203800d051daa8c54b430a20d84ba56b3843a17eb514af14c5"
+  },
+  "id": "Gmhk5RUDhpdZMtSs",
+  "tags": []
+}

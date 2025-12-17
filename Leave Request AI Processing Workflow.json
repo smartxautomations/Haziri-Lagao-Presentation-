@@ -1,0 +1,403 @@
+{
+  "name": "Leave Request AI Processing Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "4bc0ba87-3066-4c5f-baeb-6046a18587ef",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "aaa34855-9c9f-4392-9e1f-8a5adc07bc7f",
+      "name": "Webhook - Receive Leave Request",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -16,
+        64
+      ],
+      "webhookId": "4bc0ba87-3066-4c5f-baeb-6046a18587ef"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "condition-auth",
+              "leftValue": "={{ $json.headers['x-webhook-secret'] }}",
+              "rightValue": "HzrLg_2025_SecureWebhook_Key_9X7mP3qL",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "7d7baef8-30f0-4fb0-9f97-3d624837ef22",
+      "name": "IF - Validate Webhook Secret",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        208,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ \"error\": \"Unauthorized - Invalid webhook secret\", \"status\": 401 }) }}",
+        "options": {
+          "responseCode": 401
+        }
+      },
+      "id": "f80ebd43-27a9-4b71-ad89-f367b6e4758d",
+      "name": "Respond - 401 Unauthorized",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        432,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"request_id\": \"{{ $json.body.request_id }}\",\n  \"org_id\": \"{{ $json.body.org_id }}\",\n  \"person_id\": \"{{ $json.body.person_id }}\",\n  \"person_name\": \"{{ $json.body.person_name }}\",\n  \"person_type\": \"{{ $json.body.person_type }}\",\n  \"leave_type\": \"{{ $json.body.leave_type }}\",\n  \"leave_type_display\": \"{{ $json.body.leave_type_display }}\",\n  \"from_date\": \"{{ $json.body.from_date }}\",\n  \"to_date\": \"{{ $json.body.to_date }}\",\n  \"number_of_days\": {{ $json.body.number_of_days }},\n  \"reason\": \"{{ $json.body.reason }}\",\n  \"status\": \"{{ $json.body.status }}\",\n  \"event_type\": \"{{ $json.body.event_type }}\"\n}",
+        "options": {}
+      },
+      "id": "9be74874-c249-4b01-8378-eb737ba2e720",
+      "name": "Set - Extract Request Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        432,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze this leave request and provide your decision.\n\nLeave Request Details:\n- Person: {{ $json.person_name }} ({{ $json.person_type }})\n- Leave Type: {{ $json.leave_type }} ({{ $json.leave_type_display }})\n- Duration: {{ $json.number_of_days }} days\n- From: {{ $json.from_date }}\n- To: {{ $json.to_date }}\n- Reason: {{ $json.reason }}",
+        "options": {
+          "systemMessage": "You are a leave approval AI assistant for an attendance management system called HzrLg.\n\nYour role is to analyze leave requests and make approval/rejection decisions based on company policy.\n\n## APPROVAL CRITERIA\n\n1. **Medical/Sick Leave**: \n   - APPROVE if <= 5 days\n   - APPROVE if reason mentions illness, fever, medical appointment, surgery, hospitalization\n   - REJECT if > 5 days without strong medical justification\n\n2. **Casual Leave**:\n   - APPROVE if <= 3 days\n   - APPROVE if reason is reasonable (personal work, family event, etc.)\n   - REJECT if > 3 days or vague reason\n\n3. **Annual/Vacation Leave**:\n   - APPROVE if <= 10 days\n   - APPROVE if planned in advance\n   - REJECT if > 10 days without prior approval mention\n\n4. **Emergency Leave**:\n   - APPROVE if reason indicates genuine emergency (family emergency, accident, death, natural disaster)\n   - APPROVE regardless of duration for genuine emergencies\n   - REJECT if reason doesn't indicate real emergency\n\n5. **Other Leave Types**:\n   - Review case by case\n   - APPROVE if reason is valid and duration is reasonable\n   - REJECT if no clear reason or excessive duration\n\n## RESPONSE FORMAT\n\nYou MUST respond in valid JSON format only. No additional text before or after the JSON.\n\n```json\n{\n  \"decision\": \"approved\" or \"rejected\",\n  \"comment\": \"Brief explanation in 1-2 sentences\",\n  \"confidence\": \"high\" or \"medium\" or \"low\"\n}\n```\n\n## DECISION GUIDELINES\n\n- Be FAIR and CONSISTENT\n- Give benefit of doubt for medical reasons\n- Be strict on vague or suspicious reasons\n- Consider the person type (student vs staff) - students may need more flexibility for academic reasons\n- Always provide a helpful, professional comment\n- Set confidence to \"low\" if the case is borderline or unusual\n\n## EXAMPLES\n\nInput: Medical leave, 3 days, \"Fever and headache\"\nOutput: {\"decision\": \"approved\", \"comment\": \"Medical leave approved for 3 days. Please rest and recover.\", \"confidence\": \"high\"}\n\nInput: Casual leave, 5 days, \"Going shopping\"\nOutput: {\"decision\": \"rejected\", \"comment\": \"Casual leave exceeds 3-day limit. Please reduce duration or apply for annual leave.\", \"confidence\": \"high\"}\n\nInput: Emergency leave, 2 days, \"Family emergency - father hospitalized\"\nOutput: {\"decision\": \"approved\", \"comment\": \"Emergency leave approved. Wishing your father a speedy recovery.\", \"confidence\": \"high\"}"
+        }
+      },
+      "id": "e1cd29a8-a3a6-4a5b-bcb5-0092908253c4",
+      "name": "AI Agent - Analyze Leave Request",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        624,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the AI response and extract request data\nconst aiOutput = $input.first().json.output || $input.first().json.text || '';\nconst requestData = $('Set - Extract Request Data').first().json;\n\n// Parse AI response - handle potential JSON parsing issues\nlet aiDecision;\ntry {\n  // Try to extract JSON from the response\n  const jsonMatch = aiOutput.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) {\n    aiDecision = JSON.parse(jsonMatch[0]);\n  } else {\n    throw new Error('No JSON found in response');\n  }\n} catch (parseError) {\n  // Fallback if AI response is malformed\n  console.log('Parse error:', parseError.message);\n  console.log('AI Output:', aiOutput);\n  \n  // Default to approved with low confidence if parsing fails\n  aiDecision = {\n    decision: 'approved',\n    comment: 'Leave request processed. Please contact admin if you have questions.',\n    confidence: 'low'\n  };\n}\n\n// Validate decision values\nconst validDecisions = ['approved', 'rejected'];\nconst validConfidence = ['high', 'medium', 'low'];\n\nif (!validDecisions.includes(aiDecision.decision)) {\n  aiDecision.decision = 'approved';\n}\n\nif (!validConfidence.includes(aiDecision.confidence)) {\n  aiDecision.confidence = 'medium';\n}\n\n// Return parsed data\nreturn {\n  json: {\n    request_id: requestData.request_id,\n    org_id: requestData.org_id,\n    person_id: requestData.person_id,\n    person_name: requestData.person_name,\n    status: aiDecision.decision,\n    ai_comment: aiDecision.comment || 'Request processed',\n    confidence: aiDecision.confidence,\n    processed_at: new Date().toISOString(),\n    leave_type: requestData.leave_type,\n    number_of_days: requestData.number_of_days\n  }\n};"
+      },
+      "id": "7ce222d4-4b9c-499c-b149-8dfbc686ebd4",
+      "name": "Code - Parse AI Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        912,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://n8n.srv1076267.hstgr.cloud/webhook/4bc0ba87-3066-4c5f-baeb-6046a18587ef",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Webhook-Secret",
+              "value": "HzrLg_2025_SecureWebhook_Key_9X7mP3qL"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwcGthd3Zmb3NjY2FudHF4eWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyNjQ1MTYsImV4cCI6MjA3OTg0MDUxNn0.maqJlKmb0OdFr1HajYDHAdDrppPpuhM5CmarWuc0JV8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "event_type",
+              "value": "leave_request_submitted"
+            },
+            {
+              "name": "request_id",
+              "value": "test-001"
+            },
+            {
+              "name": "org_id",
+              "value": "your-org-id"
+            },
+            {
+              "name": "person_id",
+              "value": "person-123"
+            },
+            {
+              "name": "person_name",
+              "value": "John Doe"
+            },
+            {
+              "name": "person_type",
+              "value": "student"
+            },
+            {
+              "name": "leave_type",
+              "value": "sick"
+            },
+            {
+              "name": "leave_type_display",
+              "value": "Medical Leave"
+            },
+            {
+              "name": "from_date",
+              "value": "2025-12-10"
+            },
+            {
+              "name": "to_date",
+              "value": "2025-12-12"
+            },
+            {
+              "name": "number_of_days",
+              "value": "3"
+            },
+            {
+              "name": "reason",
+              "value": "Fever and headache"
+            },
+            {
+              "name": "status",
+              "value": "pending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e9ac9e21-97d6-463f-ae1c-042bf6c84dae",
+      "name": "HTTP Request - Update Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1152,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"status\": \"{{ $('Code - Parse AI Response').item.json.status }}\",\n  \"comment\": \"{{ $('Code - Parse AI Response').item.json.ai_comment }}\",\n  \"request_id\": \"{{ $('Code - Parse AI Response').item.json.request_id }}\",\n  \"processed_at\": \"{{ $('Code - Parse AI Response').item.json.processed_at }}\"\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "04cf13ff-4a1f-4f11-8168-b9eea9398b13",
+      "name": "Respond - Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1408,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        656,
+        256
+      ],
+      "id": "6bf613de-5d4a-4737-9335-9eced0ec7daf",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "828veyjWmhqL7LwF",
+          "name": "Google Gemini(PaLM) Api account 4"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Webhook - Receive Leave Request": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n.srv1076267.hstgr.cloud",
+            "user-agent": "axios/1.12.0",
+            "content-length": "336",
+            "accept": "application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, image/*;q=0.8, */*;q=0.7",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwcGthd3Zmb3NjY2FudHF4eWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyNjQ1MTYsImV4cCI6MjA3OTg0MDUxNn0.maqJlKmb0OdFr1HajYDHAdDrppPpuhM5CmarWuc0JV8",
+            "content-type": "application/json",
+            "prefer": "return=representation",
+            "x-forwarded-for": "172.18.0.1",
+            "x-forwarded-host": "n8n.srv1076267.hstgr.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "f1095266da7e",
+            "x-real-ip": "172.18.0.1",
+            "x-webhook-secret": "HzrLg_2025_SecureWebhook_Key_9X7mP3qL"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "event_type": "leave_request_submitted",
+            "request_id": "test-001",
+            "org_id": "your-org-id",
+            "person_id": "person-123",
+            "person_name": "John Doe",
+            "person_type": "student",
+            "leave_type": "sick",
+            "leave_type_display": "Medical Leave",
+            "from_date": "2025-12-10",
+            "to_date": "2025-12-12",
+            "number_of_days": "3",
+            "reason": "Fever and headache",
+            "status": "pending"
+          },
+          "webhookUrl": "https://n8n.srv1076267.hstgr.cloud/webhook/4bc0ba87-3066-4c5f-baeb-6046a18587ef",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook - Receive Leave Request": {
+      "main": [
+        [
+          {
+            "node": "IF - Validate Webhook Secret",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Validate Webhook Secret": {
+      "main": [
+        [
+          {
+            "node": "Set - Extract Request Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond - 401 Unauthorized",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set - Extract Request Data": {
+      "main": [
+        [
+          {
+            "node": "AI Agent - Analyze Leave Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent - Analyze Leave Request": {
+      "main": [
+        [
+          {
+            "node": "Code - Parse AI Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Parse AI Response": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request - Update Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request - Update Supabase": {
+      "main": [
+        [
+          {
+            "node": "Respond - Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent - Analyze Leave Request",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timeSavedPerExecution": 15
+  },
+  "versionId": "69d59c6e-98f6-41f4-a2a3-af49fa116e22",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "79dc35cc51772a203800d051daa8c54b430a20d84ba56b3843a17eb514af14c5"
+  },
+  "id": "rEeW2wEbzjzHLw0z",
+  "tags": [
+    {
+      "createdAt": "2025-12-06T15:00:02.176Z",
+      "updatedAt": "2025-12-06T15:00:02.176Z",
+      "id": "9Y3xf4Dnh0sbkQRM",
+      "name": "Leave Management"
+    },
+    {
+      "createdAt": "2025-12-06T15:00:02.180Z",
+      "updatedAt": "2025-12-06T15:00:02.180Z",
+      "id": "xpGpQ4Il8q8dKB6z",
+      "name": "AI Processing"
+    }
+  ]
+}
