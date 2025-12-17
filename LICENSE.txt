@@ -1,0 +1,64 @@
+PROPRIETARY SOFTWARE LICENSE AGREEMENT
+
+Copyright (c) 2025 Haziri Lgao. All Rights Reserved.
+
+NOTICE: This software and all associated documentation, code, and materials 
+(collectively, the "Software") are the exclusive property of Haziri Lgao and 
+are protected by copyright laws and international treaties.
+
+TERMS AND CONDITIONS
+
+1. OWNERSHIP
+   The Software is proprietary and confidential. All intellectual property 
+   rights in and to the Software, including but not limited to patents, 
+   copyrights, trademarks, and trade secrets, are and shall remain the 
+   exclusive property of Haziri Lgao.
+
+2. RESTRICTIONS
+   You may NOT, without prior written consent from Haziri Lgao:
+   
+   a) Copy, reproduce, or duplicate any part of the Software
+   b) Modify, adapt, translate, or create derivative works based on the Software
+   c) Reverse engineer, decompile, disassemble, or attempt to derive the 
+      source code of the Software
+   d) Distribute, sublicense, lease, rent, loan, or otherwise transfer the 
+      Software to any third party
+   e) Remove, alter, or obscure any proprietary notices on the Software
+   f) Use the Software for any commercial purpose without a valid license
+   g) Share, publish, or make available any portion of the source code
+
+3. CONFIDENTIALITY
+   The Software contains trade secrets and proprietary information. You agree 
+   to maintain the confidentiality of the Software and to take all reasonable 
+   steps to protect it from unauthorized access, use, or disclosure.
+
+4. NO WARRANTY
+   THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+   FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
+
+5. LIMITATION OF LIABILITY
+   IN NO EVENT SHALL HAZIRI LGAO BE LIABLE FOR ANY DIRECT, INDIRECT, 
+   INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ARISING OUT OF 
+   OR IN CONNECTION WITH THE SOFTWARE OR THIS LICENSE.
+
+6. TERMINATION
+   This license is effective until terminated. Haziri Lgao may terminate this 
+   license at any time if you fail to comply with its terms. Upon termination, 
+   you must destroy all copies of the Software in your possession.
+
+7. GOVERNING LAW
+   This license shall be governed by and construed in accordance with the 
+   laws of Pakistan, without regard to its conflict of law provisions.
+
+8. CONTACT
+   For licensing inquiries, please contact: legal@hazirilgao.com
+
+---
+
+By accessing, viewing, or using this Software in any way, you acknowledge 
+that you have read, understood, and agree to be bound by the terms of this 
+Proprietary Software License Agreement.
+
+Haziri Lgao
+Pakistan
